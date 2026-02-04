@@ -81,20 +81,98 @@ android:text="Hi Android"
 
 ## Running Validation
 
-### Using Docker Compose
+### ⚡ Quick Start (Recommended)
 
-**Step 1: Start the validator container**
+**1. Load Docker image:**
 ```bash
-docker-compose up -d
+docker load -i android-validator.tar
 ```
 
-**Step 2: Run validation**
+**2. Start container and run validation:**
 ```bash
+docker-compose up -d
 docker-compose exec -T assignment1_validator /validator/validator.sh
 ```
 
-**Step 3: View results**
-The command outputs JSON with validation results:
+**3. View JSON report:**
+The output shows validation results with statistics:
+- `"passed"`: Number of tests passed (0-10)
+- `"failed"`: Number of tests failed (0-10)
+- `"marks"`: Score 0.0-1.0
+- `"percentage"`: Score 0-100
+
+**4. Stop container:**
+```bash
+docker-compose down
+```
+
+---
+
+### Alternative: Using Docker Run (Manual Mounts)
+
+If you prefer not to use docker-compose, mount paths manually:
+```bash
+docker run -it --rm \
+  -v "$(pwd)/submission:/submission" \
+  -v "$(pwd)/validate_xml.py:/validator/validate_xml.py" \
+  -v "$(pwd)/enhance_json.py:/validator/enhance_json.py" \
+  -v "$(pwd)/validator.sh:/validator/validator.sh" \
+  -w /validator \
+  android-validator:arm64 \
+  bash /validator/validator.sh
+```
+
+---
+
+### Troubleshooting
+
+**Issue:** "activity_main.xml not found in submission folder"
+- **Cause:** File not at correct path
+- **Fix:** Ensure `submission/activity_main.xml` exists in current directory
+
+**Issue:** Container name already in use
+- **Cause:** Previous container still running
+- **Fix:** Run `docker-compose down` first, then `docker-compose up -d`
+
+---
+
+## Understanding Test Results
+
+The validator runs 10 tests on your XML:
+
+| Test | Description | Pass Criteria |
+|------|-------------|---------------|
+| 1 | XML is valid | Parses without errors |
+| 2 | Root is ConstraintLayout | Root element correct |
+| 3 | Namespaces present | android, app, tools declared |
+| 4 | TextView exists | Has TextView element |
+| 5 | Has text attribute | TextView has android:text |
+| 6 | Not "Hello World!" | Text has been changed |
+| 7 | Text is "Hi Android" | Text exactly matches |
+| 8 | Constraints preserved | All 4 constraints present |
+| 9 | layout_width exists | android:layout_width set |
+| 10 | layout_height exists | android:layout_height set |
+
+**Score Calculation:**
+- Passed all 10 tests = 100%
+- Each test = 10%
+- Partial credit for partial changes
+
+---
+
+### Example JSON Output
+
+```json
+{
+  "statistics": {
+    "total_checks": 10,
+    "passed": 10,
+    "failed": 0,
+    "marks": 1.0,
+    "percentage": 100.0
+  }
+}
+```
 ```json
 {
   "tests": [...],

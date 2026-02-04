@@ -3,7 +3,7 @@ version: '3.8'
 services:
   assignment1_validator:
     image: android-validator:latest
-    container_name: episode1_assignment1_validator_x86
+    container_name: episode1_assignment1_validator
     
     # Volume Mounts
     volumes:
